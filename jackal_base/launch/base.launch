@@ -2,6 +2,8 @@
   <arg name="jackal_port" default="/dev/jackal" />
   <arg name="enable_ekf" default="$(optenv ENABLE_EKF true)"/>
 
+  <arg name="make_it_harder" default="false"/>
+
   <include file="$(find jackal_description)/launch/description.launch" />
 
   <node pkg="jackal_base" type="jackal_node" name="jackal_node">
@@ -17,6 +19,7 @@
           - cmd_drive
           - wifi_connected
     </rosparam>
+    <param name="make_it_harder" value="$(arg make_it_harder)"/>
     <param name="port" value="$(arg jackal_port)" />
     <param name="wireless_interface" value="$(optenv JACKAL_WIRELESS_INTERFACE wlp2s0)" />
   </node>
@@ -38,10 +41,14 @@
   </node>
 
   <!-- Differential controller and basic localization -->
-  <include file="$(find jackal_control)/launch/control.launch" />
+  <include file="$(find jackal_control)/launch/control.launch">
+    <arg name="make_it_harder" value="$(arg make_it_harder)"/>
+  </include>
 
   <!-- Teleoperation via joystick and rviz interactive markers -->
-  <include file="$(find jackal_control)/launch/teleop.launch" />
+  <include file="$(find jackal_control)/launch/teleop.launch">
+    <arg name="make_it_harder" value="$(arg make_it_harder)"/>
+  </include>
 
   <!-- Diagnostic Aggregator for robot monitor usage -->
   <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">

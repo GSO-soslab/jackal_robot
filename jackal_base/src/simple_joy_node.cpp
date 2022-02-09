@@ -45,10 +45,10 @@ private:
   ros::Publisher drive_pub_;
 
   int deadman_button_;
-  int axis_linear_;
-  int axis_angular_;
-  float scale_linear_;
-  float scale_angular_;
+  int axis_left_;
+  int axis_right_;
+  float scale_left_;
+  float scale_right_;
 
   bool sent_deadman_msg_;
 };
@@ -56,13 +56,13 @@ private:
 SimpleJoy::SimpleJoy(ros::NodeHandle* nh) : nh_(nh)
 {
   joy_sub_ = nh_->subscribe<sensor_msgs::Joy>("joy", 1, &SimpleJoy::joyCallback, this);
-  drive_pub_ = nh_->advertise<jackal_msgs::Drive>("cmd_drive", 1, true);
+  drive_pub_ = nh_->advertise<jackal_msgs::Drive>("/cmd_drive", 1, true);
 
-  ros::param::param("~deadman_button", deadman_button_, 0);
-  ros::param::param("~axis_linear", axis_linear_, 1);
-  ros::param::param("~axis_angular", axis_angular_, 0);
-  ros::param::param("~scale_linear", scale_linear_, 1.0f);
-  ros::param::param("~scale_angular", scale_angular_, 1.0f);
+  ros::param::param("~deadman_button", deadman_button_, 5);
+  ros::param::param("~axis_left", axis_left_, 1);
+  ros::param::param("~axis_right", axis_right_, 4);
+  ros::param::param("~scale_left", scale_left_, 0.4f);
+  ros::param::param("~scale_right", scale_right_, 0.4f);
 
   sent_deadman_msg_ = false;
 }
@@ -74,10 +74,10 @@ void SimpleJoy::joyCallback(const sensor_msgs::Joy::ConstPtr& joy_msg)
   if (joy_msg->buttons[deadman_button_])
   {
     drive_msg.mode = jackal_msgs::Drive::MODE_PWM;
-    float linear = joy_msg->axes[axis_linear_] * scale_linear_;
-    float angular = joy_msg->axes[axis_angular_] * scale_angular_;
-    drive_msg.drivers[jackal_msgs::Drive::LEFT] = boost::algorithm::clamp(linear - angular, -1.0, 1.0);
-    drive_msg.drivers[jackal_msgs::Drive::RIGHT] = boost::algorithm::clamp(linear + angular, -1.0, 1.0);
+    float left = joy_msg->axes[axis_left_] * scale_left_;
+    float right = joy_msg->axes[axis_right_] * scale_right_;
+    drive_msg.drivers[jackal_msgs::Drive::LEFT] = boost::algorithm::clamp(left, -1.0, 1.0);
+    drive_msg.drivers[jackal_msgs::Drive::RIGHT] = boost::algorithm::clamp(right, -1.0, 1.0);
     drive_pub_.publish(drive_msg);
     sent_deadman_msg_ = false;
   }

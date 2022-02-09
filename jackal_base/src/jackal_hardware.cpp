@@ -58,7 +58,14 @@ JackalHardware::JackalHardware()
   feedback_sub_ = nh_.subscribe("feedback", 1, &JackalHardware::feedbackCallback, this);
 
   // Realtime publisher, initializes differently from regular ros::Publisher
-  cmd_drive_pub_.init(nh_, "cmd_drive", 1);
+
+  // I figured, if I wanted to drive the robot using cmd_drive topic, 
+  // I should stop publishing it. Right?
+  bool any_harder;
+  ros::param::param<bool>("~make_it_harder", any_harder, false);  
+  if(not any_harder) {
+    cmd_drive_pub_.init(nh_, "cmd_drive", 1);
+  }
 }
 
 /**
